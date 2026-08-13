@@ -85,7 +85,7 @@ var stealthKillOn   = false;
 
 // HITBOX
 var hitboxOn        = false;
-var hitboxSize      = 1.2;
+var hitboxSize      = 1.1;
 
 // ANTI-ANTI-JAK
 var slowWalkOn      = false;
@@ -928,7 +928,7 @@ function mainMenu() {
                 distFloatTarget = null; antiJakOn = false; noFallOn = false;
                 flyOn = false; godModeOn = false; slowWalkOn = false;
                 killAuraOn = false; autoAttackOn = false; fastHitOn = false;
-                stealthKillOn = false; hitboxOn = false; hitboxSize = 1.2;
+                stealthKillOn = false; hitboxOn = false; hitboxSize = 1.1;
                 tipDistOn = false; tipCoordsOn = false;
                 selectedPlayer = null; selectedPlayerName = "";
                 try { Entity.removeAllEffects(myEnt()); } catch(e){}
@@ -1031,8 +1031,8 @@ function menuCombate() {
                     clientMessage(v ? "§dHitbox ON [" + hitboxSize + "]" : "§7Hitbox OFF");
                 }, C.WARN
             );
-            makeStepSliderRow(inner, "Hitbox Size", "Tamanio: 1.2, 1.3, 1.4, 1.5 y 2.0 (max)",
-                hitboxSize, [1.2, 1.3, 1.4, 1.5, 2.0], function(val) {
+            makeStepSliderRow(inner, "Hitbox Size", "Tamanio: 1.1 1.2, 1.3, 1.4, 1.5 y 2.0 (max)",
+                hitboxSize, [1.1, 1.2, 1.3, 1.4, 1.5, 2.0], function(val) {
                     hitboxSize = val;
                     clientMessage("§dHitbox Size: " + val);
                 }
