@@ -1697,18 +1697,26 @@ function getPlayerDistance(playerEnt) {
     } catch(e) { return 999; }
 }
 
-// X-Ray visual: los bloques de terreno se vuelven transparentes; los minerales quedan normales.
+// X-Ray visual: solo bloques opacos de terreno/construccion; minerales y bloques parciales quedan normales.
 function setXrayRenderLayer(enabled) {
-    var transparentBlocks = [
-        1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13,
-        17, 18, 20, 24, 25, 26, 27, 30, 35, 43, 44, 45, 46, 47,
-        48, 49, 50, 53, 58, 60, 61, 62, 64, 65, 67, 68, 69,
-        80, 82, 85, 87, 88, 98, 99, 100, 108, 109, 110,
-        112, 113, 121, 128, 134, 135, 136, 159, 162,
-        163, 164, 168, 172, 174, 179, 180, 181, 182
+    var opaqueBlocks = [
+        1, 2, 3, 4, 5, 7, 12, 13, 17, 24, 25, 26, 35,
+        45, 46, 47, 48, 49, 58, 60, 61, 62, 82, 87, 88,
+        98, 110, 112, 121, 159, 162, 168, 172, 179
     ];
-    for (var i = 0; i < transparentBlocks.length; i++) {
-        try { Block.setRenderLayer(transparentBlocks[i], enabled ? 1 : 0); } catch(e) {}
+    var nativeTransparentBlocks = [6, 8, 9, 10, 11, 18, 20, 30, 50, 65, 69, 80,
+        99, 100, 174];
+    var partialBlocks = [27, 43, 44, 53, 64, 67, 68, 85, 108, 109, 113,
+        128, 134, 135, 136, 163, 164, 180, 181, 182];
+
+    for (var i = 0; i < opaqueBlocks.length; i++) {
+        try { Block.setRenderLayer(opaqueBlocks[i], enabled ? 1 : 0); } catch(e) {}
+    }
+    for (var j = 0; j < nativeTransparentBlocks.length; j++) {
+        try { Block.setRenderLayer(nativeTransparentBlocks[j], 1); } catch(e) {}
+    }
+    for (var k = 0; k < partialBlocks.length; k++) {
+        try { Block.setRenderLayer(partialBlocks[k], 1); } catch(e) {}
     }
 }
 
@@ -1994,12 +2002,19 @@ function modTick() {
 // ============================================================
 //  EVENTOS
 // ============================================================
+function resetXrayForWorld() {
+    xrayBasesOn = false;
+    try { setXrayRenderLayer(false); } catch(e) {}
+}
+
 function newLevel() {
+    resetXrayForWorld();
     refreshPlayerSnapshot();
     if (typeof menuBtn == "function") menuBtn();
 }
 
 function joinServer(host, port) {
+    resetXrayForWorld();
     refreshPlayerSnapshot();
     if (typeof menuBtn == "function") menuBtn();
 }
@@ -2016,8 +2031,11 @@ function deathHook(victim, attacker) {
 
 ModPE.langEdit("menu.copyright", "§dModz X §fV50");
 
-// Restablece la capa visual por si el script se recarga con X-Ray activo.
-try { setXrayRenderLayer(false); } catch(e) {}
+// Limpia cualquier capa que haya quedado de una versión anterior; X-Ray inicia apagado.
+try {
+    xrayBasesOn = false;
+    setXrayRenderLayer(false);
+} catch(e) {}
 
 // El loader ya validó la sesión; solo se muestra el menú.
 if (typeof menuBtn == "function") menuBtn();
