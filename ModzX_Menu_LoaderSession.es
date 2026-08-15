@@ -48,7 +48,7 @@ var C = {
 
 // === SESION PROPORCIONADA POR EL LOADER ===
 // No se vuelve a solicitar la key aquí; el loader define estos valores.
-if (typeof SERVER_URL === "undefined") SERVER_URL = "http://78.154.103.25:14438";
+if (typeof SERVER_URL === "undefined") SERVER_URL = "http://78.154.103.40:13143";
 if (typeof AUTH_TOKEN === "undefined") AUTH_TOKEN = "";
 if (typeof AUTH_USER === "undefined") AUTH_USER = "";
 if (typeof AUTH_PLAN === "undefined") AUTH_PLAN = "";
@@ -72,7 +72,6 @@ var godModeOn       = false;
 var noFallOn        = false;
 var distFloatOn     = false;
 var distFloatTarget = null;
-var xrayBasesOn     = false;
 var autoSpawnOn     = false;
 var autoKillOn      = false;
 var autoSpawnArmed  = true;
@@ -900,7 +899,6 @@ function getStatusLine() {
     if (espOverlayOn)   parts.push("ESP");
     if (findChestOn)    parts.push("Chest");
     if (findHopperOn)   parts.push("Hopper");
-    if (xrayBasesOn)    parts.push("XRay");
     if (distFloatOn)    parts.push("Dist");
     if (autoSpawnOn)    parts.push("AutoSpawn");
     if (autoKillOn)     parts.push("AutoKill");
@@ -997,7 +995,6 @@ function mainMenu() {
             makeActionRow(inner, "[X]", "Desactivar todo", "Apaga todos los modulos", true, function() {
                 nightVisionOn = false; playerDetectOn = false; espOverlayOn = false;
                 findChestOn = false; findHopperOn = false;
-                setXrayRenderLayer(false); xrayBasesOn = false;
                 distFloatOn = false; distFloatTarget = null; autoSpawnOn = false;
                 autoKillOn = false; autoSpawnArmed = true; autoKillArmed = true;
                 antiJakOn = false; noFallOn = false;
@@ -1555,19 +1552,6 @@ function menuDeteccion() {
                     else { hopperFound = []; clientMessage("§7Find Tolva auto OFF"); }
                 }, C.WARN
             );
-            makeToggleRow(inner, "X-Ray Bases / Tolvas",
-                "Hace transparentes los bloques solidos y deja visibles los minerales.",
-                xrayBasesOn, function(v) {
-                    xrayBasesOn = v;
-                    if (v) {
-                        setXrayRenderLayer(true);
-                        clientMessage("§dX-Ray visual ON");
-                    } else {
-                        setXrayRenderLayer(false);
-                        clientMessage("§7X-Ray visual OFF");
-                    }
-                }, C.ACCENT2
-            );
 
             makeDivider(inner, "Resultados");
             makeActionRow(inner, "[S]", "Escanear cofres 30", "Busqueda manual", false, function() { scanChests(30); });
@@ -1695,29 +1679,6 @@ function getPlayerDistance(playerEnt) {
         var dz = Entity.getZ(playerEnt) - myZ();
         return Math.sqrt(dx*dx + dy*dy + dz*dz);
     } catch(e) { return 999; }
-}
-
-// X-Ray visual: solo bloques opacos de terreno/construccion; minerales y bloques parciales quedan normales.
-function setXrayRenderLayer(enabled) {
-    var opaqueBlocks = [
-        1, 2, 3, 4, 5, 7, 12, 13, 17, 24, 25, 26, 35,
-        45, 46, 47, 48, 49, 58, 60, 61, 62, 82, 87, 88,
-        98, 110, 112, 121, 159, 162, 168, 172, 179
-    ];
-    var nativeTransparentBlocks = [6, 8, 9, 10, 11, 18, 20, 30, 50, 65, 69, 80,
-        99, 100, 174];
-    var partialBlocks = [27, 43, 44, 53, 64, 67, 68, 85, 108, 109, 113,
-        128, 134, 135, 136, 163, 164, 180, 181, 182];
-
-    for (var i = 0; i < opaqueBlocks.length; i++) {
-        try { Block.setRenderLayer(opaqueBlocks[i], enabled ? 1 : 0); } catch(e) {}
-    }
-    for (var j = 0; j < nativeTransparentBlocks.length; j++) {
-        try { Block.setRenderLayer(nativeTransparentBlocks[j], 1); } catch(e) {}
-    }
-    for (var k = 0; k < partialBlocks.length; k++) {
-        try { Block.setRenderLayer(partialBlocks[k], 1); } catch(e) {}
-    }
 }
 
 function scanChests(radius) {
@@ -2002,19 +1963,12 @@ function modTick() {
 // ============================================================
 //  EVENTOS
 // ============================================================
-function resetXrayForWorld() {
-    xrayBasesOn = false;
-    try { setXrayRenderLayer(false); } catch(e) {}
-}
-
 function newLevel() {
-    resetXrayForWorld();
     refreshPlayerSnapshot();
     if (typeof menuBtn == "function") menuBtn();
 }
 
 function joinServer(host, port) {
-    resetXrayForWorld();
     refreshPlayerSnapshot();
     if (typeof menuBtn == "function") menuBtn();
 }
@@ -2030,12 +1984,6 @@ function deathHook(victim, attacker) {
 }
 
 ModPE.langEdit("menu.copyright", "§dModz X §fV50");
-
-// Limpia cualquier capa que haya quedado de una versión anterior; X-Ray inicia apagado.
-try {
-    xrayBasesOn = false;
-    setXrayRenderLayer(false);
-} catch(e) {}
 
 // El loader ya validó la sesión; solo se muestra el menú.
 if (typeof menuBtn == "function") menuBtn();
